@@ -36,7 +36,7 @@ We target five cognitive gap categories:
 - **G1 — Scene-Structure Inference**: observation interpretation and grounding under partial observability
 - **G2 — Temporal Integration**: multi-step evidence accumulation from motion and sequential reveals
 - **G3 — Numerosity & Invariants**: decision-boundary sensitivity to discrete quantities and counts
-- **G4 — Latent-State Tracking**: working-memory consistency across interaction steps
+- **G4 — Latent-State Tracking**: effective working-memory management across interaction steps
 - **G5 — Perception-to-Action**: robust low-level execution of correct browser interactions
 
 This repository provides:
@@ -117,15 +117,15 @@ Frontier AI models still lag significantly behind human performance on our bench
 The best models achieve only single-digit accuracy while incurring high costs and long response times.
 
 - **Full 519-puzzle evaluation**: Gemini-3-Pro-High, Gemini-3-Flash-High, Doubao-Seed-1.8-Thinking-HighEffort, Qwen3-VL-Plus-ThinkingHigh
-- **135-puzzle lite subset** (due to latency/cost): Claude-Opus4.5-Extended-ThinkingHigh, GPT-5.2-xHigh — costs extrapolated to the full 519-puzzle set
+- **135-puzzle lite subset** (due to latency/cost): Claude-Opus4.5-Extended-ThinkingHigh, GPT-5.2-xHigh — accuracy reflects the 135-puzzle lite subset only; costs in the figure are linearly extrapolated to the full 519-puzzle set for comparability
 
 <p align="center">
   <img src="./assets/figure_cost_effectiveness.png" alt="Cost-Effectiveness Analysis" width="60%">
 </p>
 
-### Failure Case Correlation
+### Success–Trajectory Correlation
 
-Analysis of failure patterns across CAPTCHA families, revealing which puzzle types are most effective at defeating current AI agents.
+Success–trajectory correlation differs between current and Next-Gen CAPTCHAs: current CAPTCHAs show non-trivial correlations with interaction metrics (more steps/reasoning can help), while Next-Gen correlations stay near zero — more effort or reasoning budget rarely improves agent success.
 
 <p align="center">
   <img src="./assets/captcha_correlation1.png" alt="Failure Case Correlation" width="115%">
