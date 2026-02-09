@@ -1,0 +1,10 @@
+flask>=2.0.0
+werkzeug>=2.0.0
+flask-cors>=3.0.0
+pillow>=9.0.0
+gunicorn>=20.0.0
+python-dotenv
+browser-use>=0.11.1
+gradio>=5.49.1
+matplotlib>=3.10.7
+pandas>=2.3.3

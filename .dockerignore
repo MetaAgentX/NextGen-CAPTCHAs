@@ -1,0 +1,14 @@
+.git
+.gitignore
+.dockerignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+env
+venv
+benchmark_results.json
+debug.log
+info.log

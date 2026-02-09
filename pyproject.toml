@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agent_frameworks"]
+include = [
+    "app.py",
+    "main.py",
+    "captcha_data",
+    "static",
+    "templates",
+]
+
+[project]
+name = "captchav2"
+version = "0.2.0"
+description = "CAPTCHA Puzzle Benchmark Application - A web-based benchmark platform for testing various CAPTCHA puzzle types"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask>=2.0.0",
+    "werkzeug>=2.0.0",
+    "flask-cors>=3.0.0",
+    "pillow>=9.0.0",
+    "gunicorn>=20.0.0",
+    "python-dotenv",
+    "browser-use>=0.11.1",
+    "gradio>=5.49.1",
+    "matplotlib>=3.10.7",
+    "pandas>=2.3.3",
+    "playwright>=1.57.0",
+    "transformers>=4.40.0",  # For Qwen tokenizer (vLLM thinking token counting)
+]
+
+
+[project.scripts]
+browseruse-cli = "agent_frameworks.browseruse_cli:main"
+crewai-cli = "agent_frameworks.crewai_cli:main"
+
+[dependency-groups]
+dev = [
+    "pymupdf>=1.26.7",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CAPTCHA Puzzle Benchmark</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="main-wrapper">
+      <!-- Header Section -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="logo-section">
+            <div class="logo-icon">🧩</div>
+            <h1 class="app-title">Next-Gen CAPTCHAs</h1>
+          </div>
+          <div id="debug-indicator" class="debug-badge" style="display: none">
+            <span class="debug-icon">🔧</span>
+            <span>Debugging Mode: <span id="debug-type-display"></span></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Stats Section -->
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card stat-card-total">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-label">Total Puzzles</div>
+              <div class="stat-value" id="total-count" title="Total puzzles attempted">0</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-correct">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-label">Correct</div>
+              <div class="stat-value" id="correct-count">0</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-accuracy">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <div class="stat-label">Accuracy</div>
+              <div class="stat-value" id="accuracy">0%</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-time">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-content">
+              <div class="stat-label">Question Time</div>
+              <div class="stat-value" id="elapsed-time">0.0s</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Type Stats (hidden by default) -->
+        <div class="stats-grid" id="type-stats-section" style="display: none; margin-top: 15px; border-top: 2px solid #eee; padding-top: 15px;">
+          <div class="stat-card stat-card-type">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <div class="stat-label" id="type-label">Selected Type</div>
+              <div class="stat-value" id="type-puzzles">0/0</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-type-accuracy">
+            <div class="stat-icon">✓</div>
+            <div class="stat-content">
+              <div class="stat-label">Type Accuracy</div>
+              <div class="stat-value" id="type-accuracy">0%</div>
+            </div>
+          </div>
+          <div class="stat-card stat-card-type-time">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-content">
+              <div class="stat-label">Total Type Time</div>
+              <div class="stat-value" id="type-time">0.0s</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Puzzle Type Selection -->
+      <section
+        class="selection-section"
+        style="margin: 20px auto; max-width: 800px; text-align: center"
+      >
+        <details>
+          <summary
+            style="
+              cursor: pointer;
+              font-weight: 600;
+              color: #555;
+              margin-bottom: 10px;
+            "
+          >
+            Select Puzzle Type
+          </summary>
+          <div
+            id="puzzle-type-selector"
+            style="
+              display: flex;
+              flex-wrap: wrap;
+              gap: 10px;
+              justify-content: center;
+              padding: 10px;
+              background: #f8f9fa;
+              border-radius: 8px;
+              border: 1px solid #eee;
+            "
+          >
+            <!-- Buttons will be injected here by JS -->
+            <div style="color: #888; font-style: italic">Loading types...</div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Puzzle Section -->
+      <main class="puzzle-section">
+        <div class="puzzle-container" id="puzzle-container">
+          <!-- Difficulty Badge -->
+          <div class="difficulty-badge">
+            <span class="difficulty-label">Difficulty:</span>
+            <div id="difficulty-stars" class="difficulty-stars"></div>
+          </div>
+
+          <!-- Puzzle Content -->
+          <div class="puzzle-content">
+            <div class="puzzle-image-wrapper">
+              <div class="puzzle-image-container">
+                <img id="puzzle-image" src="" alt="CAPTCHA Puzzle" />
+              </div>
+            </div>
+
+            <div class="puzzle-question-section">
+              <div id="puzzle-id-display" style="display: none; font-size: 12px; color: #666; margin-bottom: 5px; font-family: monospace;">
+                Puzzle: <span id="puzzle-id-text">-</span>
+              </div>
+              <h2 id="puzzle-prompt" class="puzzle-prompt">
+                Loading puzzle...
+              </h2>
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="user-answer"
+                  placeholder="Enter your answer..."
+                  class="answer-input"
+                />
+                <button id="submit-answer" class="submit-button">
+                  <span class="button-text">Submit</span>
+                  <span class="button-icon">➜</span>
+                </button>
+              </div>
+              <div id="result-message" class="result-message"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Inline script for immediate star display -->
+    <script>
+      // Display placeholder stars immediately before main script loads
+      window.onload = function () {
+        const starsContainer = document.getElementById("difficulty-stars");
+        if (starsContainer) {
+          starsContainer.innerHTML = "";
+          for (let i = 0; i < 5; i++) {
+            const star = document.createElement("span");
+            star.className = "star";
+            star.innerHTML = i < 3 ? "★" : "☆"; // Default to 3 stars
+            starsContainer.appendChild(star);
+          }
+        }
+      };
+    </script>
+
+    <!-- Agent metadata injection point - will be populated by browser automation -->
+    <script>
+      // Initialize agent metadata from localStorage if available
+      // This ensures metadata persists across page reloads
+      (function () {
+        function loadMetadata() {
+          try {
+            const stored = localStorage.getItem("__agentMetadata");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              window.__agentMetadata = parsed;
+              console.log(
+                "Loaded agent metadata from localStorage on page load:",
+                parsed
+              );
+              return;
+            }
+          } catch (e) {
+            console.warn("Could not load metadata from localStorage:", e);
+          }
+          // Fallback: initialize empty object
+          if (!window.__agentMetadata) {
+            window.__agentMetadata = {
+              model: null,
+              provider: null,
+              agentFramework: null,
+            };
+          }
+        }
+
+        // Load immediately
+        loadMetadata();
+
+        // Also load on DOMContentLoaded
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", loadMetadata);
+        }
+
+        // Re-check periodically (every 1 second for faster updates)
+        setInterval(function () {
+          try {
+            const stored = localStorage.getItem("__agentMetadata");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              if (
+                !window.__agentMetadata ||
+                window.__agentMetadata.model !== parsed.model ||
+                window.__agentMetadata.provider !== parsed.provider
+              ) {
+                window.__agentMetadata = parsed;
+                console.log(
+                  "Updated agent metadata from localStorage:",
+                  parsed
+                );
+              }
+            }
+          } catch (e) {
+            // Ignore errors
+          }
+        }, 1000);
+      })();
+    </script>
+
+    <!-- Three.js for 3D dice visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="/static/js/script.js"></script>
+  </body>
+</html>

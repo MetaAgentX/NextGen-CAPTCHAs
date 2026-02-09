@@ -1,0 +1,25 @@
+# Dockerfile for HuggingFace Spaces
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=True
+ENV APP_HOME=/app
+ENV PORT=7860
+
+WORKDIR $APP_HOME
+
+# Copy requirements first for better caching
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
+COPY app.py ./
+COPY captcha_data/ ./captcha_data/
+COPY templates/ ./templates/
+COPY static/ ./static/
+
+# Expose port for HuggingFace Spaces
+EXPOSE 7860
+
+# Run the web service
+CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--workers", "1", "--threads", "8", "--timeout", "120", "app:app"]

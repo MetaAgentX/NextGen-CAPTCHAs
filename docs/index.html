@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next-Gen CAPTCHAs: GUI-Agent Defense</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <h1 class="title">Next-Gen CAPTCHAs</h1>
+            <p class="subtitle">Leveraging the Cognitive Gap for Scalable and Diverse GUI-Agent Defense</p>
+
+            <div class="authors">
+                <span class="author">Jiacheng Liu<sup>*1</sup></span>
+                <span class="author">Yaxin Luo<sup>*1</sup></span>
+                <span class="author">Jiacheng Cui<sup>1</sup></span>
+                <span class="author">Xinyi Shang<sup>1,2</sup></span>
+                <span class="author">Xiaohan Zhao<sup>1</sup></span>
+                <span class="author">Zhiqiang Shen<sup>1</sup></span>
+            </div>
+            <div class="affiliations">
+                <span class="affiliation"><sup>1</sup>Mohamed bin Zayed University of Artificial Intelligence (MBZUAI)</span>
+                <span class="affiliation"><sup>2</sup>University College London</span>
+                <span class="affiliation note">* Equal Contribution</span>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-card human">
+                    <div class="stat-icon">&#128100;</div>
+                    <div class="stat-value">98.8%</div>
+                    <div class="stat-label">Human Pass@1</div>
+                    <div class="stat-detail">31s avg</div>
+                </div>
+                <div class="stat-vs">
+                    <div class="gap-arrow">&#8592; 92.9% Gap &#8594;</div>
+                </div>
+                <div class="stat-card ai">
+                    <div class="stat-icon">&#129302;</div>
+                    <div class="stat-value">5.9%</div>
+                    <div class="stat-label">Best AI Pass@1</div>
+                    <div class="stat-detail">GPT-5.2-xHigh</div>
+                </div>
+            </div>
+
+            <div class="hero-links">
+                <a href="#demo" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Try Demo
+                </a>
+                <a href="https://github.com/MetaAgentX/NextGen-CAPTCHAs" class="btn btn-secondary" target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    Code
+                </a>
+                <a href="#" class="btn btn-secondary" target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Paper
+                </a>
+                <a href="https://huggingface.co/spaces/zcahjl3/NextGen-CAPTCHAs" class="btn btn-secondary" target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    HF Space
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Abstract Section -->
+    <section class="abstract">
+        <div class="container">
+            <h2>Abstract</h2>
+            <p>
+                The rapid evolution of GUI-enabled agents has rendered traditional CAPTCHAs obsolete.
+                While previous benchmarks established a baseline for evaluating multimodal agents,
+                recent advancements in reasoning-heavy models have effectively collapsed this security barrier,
+                achieving pass rates as high as 90% on complex logic puzzles.
+            </p>
+            <p>
+                We introduce <strong>Next-Gen CAPTCHAs</strong>, a scalable defense framework with
+                <strong>27 novel CAPTCHA families</strong> designed to secure the next-generation web against advanced agents.
+                We exploit the persistent human-agent <em>"Cognitive Gap"</em> in interactive perception, memory,
+                decision-making, and action. By engineering dynamic tasks that require adaptive intuition
+                rather than granular planning, we re-establish a robust distinction between biological users
+                and artificial agents.
+            </p>
+        </div>
+    </section>
+
+    <!-- Key Results Section -->
+    <section class="results" id="results">
+        <div class="container">
+            <h2>Key Results</h2>
+            <p class="section-desc">Performance comparison across frontier AI models on our benchmark (519 puzzles)</p>
+
+            <div class="results-chart">
+                <div class="chart-container">
+                    <div class="bar-chart">
+                        <div class="bar human-bar" style="--height: 98.8%">
+                            <span class="bar-value">98.8%</span>
+                            <span class="bar-label">Human</span>
+                        </div>
+                        <div class="bar ai-bar" style="--height: 5.9%">
+                            <span class="bar-value">5.9%</span>
+                            <span class="bar-label">GPT-5.2-xHigh</span>
+                        </div>
+                        <div class="bar ai-bar" style="--height: 3.2%">
+                            <span class="bar-value">3.2%</span>
+                            <span class="bar-label">Gemini-3-Flash</span>
+                        </div>
+                        <div class="bar ai-bar" style="--height: 3.0%">
+                            <span class="bar-value">3.0%</span>
+                            <span class="bar-label">Claude-Opus4.5</span>
+                        </div>
+                        <div class="bar ai-bar" style="--height: 1.3%">
+                            <span class="bar-value">1.3%</span>
+                            <span class="bar-label">Gemini-3-Pro</span>
+                        </div>
+                        <div class="bar ai-bar" style="--height: 1.3%">
+                            <span class="bar-value">1.3%</span>
+                            <span class="bar-label">Doubao-Seed-1.8</span>
+                        </div>
+                        <div class="bar ai-bar" style="--height: 0.9%">
+                            <span class="bar-value">0.9%</span>
+                            <span class="bar-label">Qwen3-VL-Plus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cost-insight">
+                <div class="insight-card">
+                    <div class="insight-icon">&#128176;</div>
+                    <div class="insight-content">
+                        <div class="insight-title">Economic Asymmetry</div>
+                        <div class="insight-desc">GPT-5.2-xHigh spent <strong>$3,122</strong> to achieve only 5.9% success rate, while humans solve in 31 seconds for free.</div>
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-icon">&#9201;</div>
+                    <div class="insight-content">
+                        <div class="insight-title">Time Barrier</div>
+                        <div class="insight-desc">High-reasoning models require <strong>16-77 minutes</strong> per puzzle vs. human's sub-minute performance.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cognitive Gap Categories -->
+    <section class="categories">
+        <div class="container">
+            <h2>Cognitive Gap Categories</h2>
+            <p class="section-desc">Our CAPTCHAs target 5 fundamental human-agent gaps</p>
+
+            <div class="category-grid">
+                <div class="category-card" data-category="G1">
+                    <div class="category-header">
+                        <span class="category-tag">G1</span>
+                        <h3>Scene-Structure Inference</h3>
+                    </div>
+                    <p>Observation interpretation and grounding under partial observability</p>
+                    <div class="category-examples">Mirror, Shadow Direction, 3D Viewpoint, Backmost Layer</div>
+                </div>
+                <div class="category-card" data-category="G2">
+                    <div class="category-header">
+                        <span class="category-tag">G2</span>
+                        <h3>Temporal Integration</h3>
+                    </div>
+                    <p>Multi-step evidence accumulation from motion and sequential reveals</p>
+                    <div class="category-examples">Spooky Circle, Structure From Motion, Trajectory Recovery</div>
+                </div>
+                <div class="category-card" data-category="G3">
+                    <div class="category-header">
+                        <span class="category-tag">G3</span>
+                        <h3>Numerosity & Invariants</h3>
+                    </div>
+                    <p>Decision-boundary sensitivity to discrete quantities and counts</p>
+                    <div class="category-examples">Hole Counting, Color Counting, Subway Paths</div>
+                </div>
+                <div class="category-card" data-category="G4">
+                    <div class="category-header">
+                        <span class="category-tag">G4</span>
+                        <h3>Latent-State Tracking</h3>
+                    </div>
+                    <p>Working-memory consistency across interaction steps</p>
+                    <div class="category-examples">Dice Roll Path, Box Folding, Temporal Object Continuity</div>
+                </div>
+                <div class="category-card" data-category="G5">
+                    <div class="category-header">
+                        <span class="category-tag">G5</span>
+                        <h3>Perception-to-Action</h3>
+                    </div>
+                    <p>Robust low-level execution of correct browser interactions</p>
+                    <div class="category-examples">Static Jigsaw, Dynamic Jigsaw, Red Dot</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CAPTCHA Gallery -->
+    <section class="gallery" id="gallery">
+        <div class="container">
+            <h2>CAPTCHA Gallery</h2>
+            <p class="section-desc">27 novel CAPTCHA families designed to defend against GUI agents</p>
+
+            <div class="gallery-filters">
+                <button class="filter-btn active" data-filter="all">All (27)</button>
+                <button class="filter-btn" data-filter="G1">G1: Scene Structure</button>
+                <button class="filter-btn" data-filter="G2">G2: Temporal</button>
+                <button class="filter-btn" data-filter="G3">G3: Numerosity</button>
+                <button class="filter-btn" data-filter="G4">G4: State Tracking</button>
+                <button class="filter-btn" data-filter="G5">G5: Action</button>
+            </div>
+
+            <div class="captcha-grid" id="captcha-grid">
+                <!-- Captchas will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="demo" id="demo">
+        <div class="container">
+            <h2>Try the Demo</h2>
+            <p class="section-desc">Experience Next-Gen CAPTCHAs yourself</p>
+
+            <div class="demo-cta">
+                <a href="https://huggingface.co/spaces/zcahjl3/NextGen-CAPTCHAs" class="btn btn-large btn-primary" target="_blank">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Launch Interactive Demo
+                </a>
+                <p class="demo-note">Opens in Hugging Face Spaces</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed Results Table -->
+    <section class="detailed-results" id="detailed-results">
+        <div class="container">
+            <h2>Detailed Results</h2>
+            <p class="section-desc">Pass@1 accuracy (%) by CAPTCHA type and model</p>
+
+            <div class="table-wrapper">
+                <table class="results-table" id="results-table">
+                    <thead>
+                        <tr>
+                            <th>CAPTCHA Type</th>
+                            <th>Human</th>
+                            <th>GPT-5.2-xHigh</th>
+                            <th>Gemini-3-Flash</th>
+                            <th>Claude-Opus4.5</th>
+                            <th>Gemini-3-Pro</th>
+                            <th>Doubao-Seed-1.8</th>
+                            <th>Qwen3-VL-Plus</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-tbody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Citation -->
+    <section class="citation">
+        <div class="container">
+            <h2>Citation</h2>
+            <div class="citation-box">
+                <pre><code>@article{liu2026nextgen,
+  title={Next-Gen CAPTCHAs: Leveraging the Cognitive Gap for
+         Scalable and Diverse GUI-Agent Defense},
+  author={Liu, Jiacheng and Luo, Yaxin and Cui, Jiacheng and
+          Shang, Xinyi and Zhao, Xiaohan and Shen, Zhiqiang},
+  year={2026}
+}</code></pre>
+                <button class="copy-btn" onclick="copyBibtex()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>Next-Gen CAPTCHAs &copy; 2026 | MBZUAI</p>
+            <p class="footer-note">Code and samples available for research purposes.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
