@@ -24,10 +24,36 @@ Current CAPTCHA types are no longer safe to MLLMs backed GUI agents. Browser-Use
 
 Next-Gen CAPTCHAs exploit the **Cognitive Gap** — the persistent asymmetry between human intuition and the over-segmented, step-by-step reasoning of GUI agents. We design interactive tasks that are solvable for humans without domain knowledge but systematically hard for agents due to bottlenecks in spatial grounding, temporal integration, and perception-to-action alignment.
 
+We target five cognitive gap categories:
+- **G1 — Scene-Structure Inference**: observation interpretation and grounding under partial observability
+- **G2 — Temporal Integration**: multi-step evidence accumulation from motion and sequential reveals
+- **G3 — Numerosity & Invariants**: decision-boundary sensitivity to discrete quantities and counts
+- **G4 — Latent-State Tracking**: working-memory consistency across interaction steps
+- **G5 — Perception-to-Action**: robust low-level execution of correct browser interactions
+
 This repository provides:
 1. **Defense Framework** — procedural generation of unlimited CAPTCHA instances (`captcha_generation/`)
 2. **Benchmark Snapshot** — 519 puzzles across 27 families for reproducible evaluation (`captcha_data/`)
 3. **Agent Evaluation Tools** — CLI integrations for Browser-Use and CrewAI (`agent_frameworks/`)
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [News](#news)
+- [Quick Start](#quick-start)
+- [Key Results](#key-results)
+- [CAPTCHA Families](#captcha-families)
+- [Architecture: Defense Framework + Benchmark](#architecture-defense-framework--benchmark)
+- [Benchmark Dataset](#benchmark-dataset)
+- [Installation](#installation)
+- [Download Dataset from Hugging Face](#download-dataset-from-hugging-face)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [API Endpoints](#api-endpoints)
+- [Running Benchmarks](#running-benchmarks)
+- [Agent Frameworks](#agent-frameworks)
+- [Project Structure](#project-structure)
+- [License](#license)
 
 ## News
 
@@ -52,30 +78,7 @@ uv run app.py
     --puzzles 'Dice_Roll_Path:5' --isolate-puzzles --seed 0 --headless
 ```
 
-## Table of Contents
-
-- [Introduction](#introduction)
-- [News](#news)
-- [Quick Start](#quick-start)
-- [Paper Results](#paper-results)
-- [Features](#features)
-- [Architecture: Defense Framework + Benchmark](#architecture-defense-framework--benchmark)
-- [Benchmark Dataset Details](#benchmark-dataset-details)
-- [Installation](#installation)
-- [Download Dataset from Hugging Face](#download-dataset-from-hugging-face)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [API Endpoints](#api-endpoints)
-- [Running Benchmarks](#running-benchmarks)
-- [Paper Reproducibility](#paper-reproducibility)
-- [Agent Frameworks](#agent-frameworks)
-- [Project Structure](#project-structure)
-- [License](#license)
-
-
-## Paper Results
-
-### Current CAPTCHAs Are Broken
+## Key Results
 
 Advanced GUI agents (e.g., Claude-Cowork-Opus4.5) can now effectively solve existing CAPTCHAs through structured perception, reasoning, and action execution.
 
@@ -109,7 +112,10 @@ Frontier AI models still lag significantly behind human performance on our bench
 
 ### Cost-Effectiveness Analysis
 
-Under the paper's two-tier evaluation protocol (full 519-puzzle set for Gemini-3-Pro-High, Gemini-3-Flash-High, Doubao-Seed-1.8-Thinking-HighEffort, and Qwen3-VL-Plus-ThinkingHigh; 135-puzzle subset for Claude-Opus4.5-Extended-ThinkingHigh and GPT-5.2-xHigh due to latency/cost), the best models still achieve only single-digit accuracy while incurring high costs and long response times.
+The best models achieve only single-digit accuracy while incurring high costs and long response times.
+
+- **Full 519-puzzle evaluation**: Gemini-3-Pro-High, Gemini-3-Flash-High, Doubao-Seed-1.8-Thinking-HighEffort, Qwen3-VL-Plus-ThinkingHigh
+- **135-puzzle lite subset** (due to latency/cost): Claude-Opus4.5-Extended-ThinkingHigh, GPT-5.2-xHigh — costs extrapolated to the full 519-puzzle set
 
 <p align="center">
   <img src="./assets/figure_cost_effectiveness.png" alt="Cost-Effectiveness Analysis" width="55%">
@@ -124,14 +130,9 @@ Analysis of failure patterns across CAPTCHA families, revealing which puzzle typ
 </p>
 
 
-## Paper Reproducibility
+## CAPTCHA Families
 
-For reproducing the paper's main results (two-tier evaluation protocol, seed settings, latency caveats), see [BENCHMARKING.md — Reproducing Paper Results](BENCHMARKING.md#reproducing-paper-results).
-
-
-## Features
-
-- **Multiple CAPTCHA Types**: Support for 27 puzzle types targeting 5 cognitive gap categories:
+27 puzzle types targeting the five cognitive gap categories (G1–G5):
 
 | CAPTCHA Type | Targeted Gaps |
 |--------------|---------------|
@@ -163,49 +164,25 @@ For reproducing the paper's main results (two-tier evaluation protocol, seed set
 | Temporal Object Continuity | G2, G4 |
 | Trajectory Recovery | G2, G4 |
 
-**Cognitive Gap Categories:**
-- **G1**: Scene-Structure Inference
-- **G2**: Temporal Integration
-- **G3**: Numerosity & Invariants
-- **G4**: Latent-State Tracking
-- **G5**: Perception-to-Action
-
-- **Benchmark Dataset**: 519 total puzzles across 27 families
-  - **Lite subset**: 135 puzzles (5 per family) for quick evaluation
-  - Per-family sizes vary (e.g., Mirror: 11, Shadow_Plausible: 8, others: ~20)
-
-- **Real-time Statistics**: Track total puzzles solved, correct answers, and accuracy rate
-- **Interactive UI**: Modern, responsive web interface with smooth animations
-- **RESTful API**: JSON API for puzzle generation and answer submission
-
 ## Architecture: Defense Framework + Benchmark
 
 This repository contains two complementary components:
 
-1. **Defense Framework** (generative system): Unbounded CAPTCHA generation with procedural parameters
-   - Located in `captcha_generation/`
-   - Can generate unlimited puzzle variations
-   - Supports per-family difficulty tuning
-
-2. **Benchmark Snapshot** (static dataset): Fixed set of 519 puzzles for reproducible evaluation
-   - Located in `captcha_data/`
-   - Used for paper experiments and model comparison
+1. **Defense Framework** (generative system): Unbounded CAPTCHA generation with automatic generation code script (`captcha_generation/`)
+2. **Benchmark Snapshot** (static dataset): Fixed set of puzzles for reproducible evaluation (`captcha_data/`)
 
 The benchmark is a **snapshot** from the defense framework, not an exhaustive test set.
 
-## Benchmark Dataset Details
+## Benchmark Dataset
 
-- **Full Test Set**: 519 puzzles — 20 per type (except Mirror: 11, Shadow_Plausible: 8)
-- **Lite Subset**: 135 puzzles — 5 per type for quick evaluation
+- **Full set**: 519 puzzles — 20 per type (except Mirror: 11, Shadow_Plausible: 8)
+- **Lite subset**: 135 puzzles — 5 per type, for cost-effective evaluation under limited query budgets
 
 For the full lite subset index table, see [BENCHMARKING.md — Benchmark Dataset Details](BENCHMARKING.md#benchmark-dataset-details).
 
-## Requirements
-
-- Python 3.11 or higher (required for browser-use integration)
-- See `requirements.txt` or `pyproject.toml` for dependencies
-
 ## Installation
+
+**Requirements:** Python 3.11+ (required for browser-use integration). See `requirements.txt` or `pyproject.toml` for dependencies.
 
 ### Using uv (Highly Recommended! Faster! Easier & more reproducible!)
 
@@ -220,7 +197,7 @@ uv sync
 # export BENCHMARK_RESULTS_FILE="results_{provider}_{model}_{timestamp}.json" (customize result filename; {timestamp} is server start time)
 uv run app.py
 
-### Use uv to run code so you do not have to activate virtual env everytime.
+# Use uv to run code so you do not have to activate virtual env everytime.
 # Test the Browser-Use framework default agents (Their in house model BU1.0)
 uv run agent_frameworks/browseruse_cli.py --url http://127.0.0.1:7860 --llm browser-use 
 
@@ -378,6 +355,10 @@ This is useful for:
 ```
 
 See [BENCHMARKING.md](BENCHMARKING.md) for full CLI reference, parallel execution, paper reproduction settings, output format, and result classification.
+
+### Paper Reproducibility
+
+For reproducing the paper's main results (two-tier evaluation protocol, seed settings, latency caveats), see [BENCHMARKING.md — Reproducing Paper Results](BENCHMARKING.md#reproducing-paper-results).
 
 ## Agent Frameworks
 
