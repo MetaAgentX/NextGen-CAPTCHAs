@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/MetaAgentX/NextGen-CAPTCHAs">
-    <img src="./assets/logo.png" width="480" alt="Next-Gen CAPTCHAs" />
+    <img src="./assets/logo.png" width="350" alt="Next-Gen CAPTCHAs" />
   </a>
 </p>
 
