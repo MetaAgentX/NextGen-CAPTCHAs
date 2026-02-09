@@ -22,6 +22,10 @@ A defense framework against MLLM-based web GUI agents, with an accompanying benc
 
 Current CAPTCHA types are no longer safe to MLLMs backed GUI agents. Browser-Use agent backed by frontier models like GPT-5.2, Gemini-3-Pro, and Claude-Opus4.5 achieve considerable pass rates on existing logic CAPTCHAs (Bingo, etc.), effectively collapsing the security barrier.
 
+<p align="center">
+  <img src="./assets/case_example.png" alt="Case Analysis" width="70%">
+</p>
+
 Next-Gen CAPTCHAs exploit the **Cognitive Gap** — the persistent asymmetry between human intuition and the over-segmented, step-by-step reasoning of GUI agents. We design interactive tasks that are solvable for humans without domain knowledge but systematically hard for agents due to bottlenecks in spatial grounding, temporal integration, and perception-to-action alignment.
 
 We target five cognitive gap categories:
@@ -79,12 +83,6 @@ uv run app.py
 ```
 
 ## Key Results
-
-Advanced GUI agents (e.g., Claude-Cowork-Opus4.5) can now effectively solve existing CAPTCHAs through structured perception, reasoning, and action execution.
-
-<p align="center">
-  <img src="./assets/case_example.png" alt="Case Analysis" width="70%">
-</p>
 
 ### Pipeline Overview
 
@@ -220,7 +218,8 @@ python app.py
 ```
 
 ## Download Dataset from Hugging Face
-### https://huggingface.co/datasets/YaxinLuo/NextGen-CAPTCHAs Or:
+
+Browse at https://huggingface.co/datasets/YaxinLuo/NextGen-CAPTCHAs or download via CLI:
 
 ```bash
 # Make sure the hf CLI is installed
@@ -230,9 +229,7 @@ uv tool install hf
 hf download YaxinLuo/NextGen-CAPTCHAs --repo-type=dataset
 
 # download in custom path
-
 hf download YaxinLuo/NextGen-CAPTCHAs --repo-type=dataset --local-dir ./NextGen-CAPTCHAs
-
 ```
 
 ## Usage
@@ -328,6 +325,7 @@ This is useful for:
 - Debugging specific puzzle instances
 - Fair benchmarking (same puzzles across different models)
 - Reproducing test failures
+
 ## API Endpoints
 
 - `GET /` - Main web interface
