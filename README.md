@@ -22,17 +22,17 @@ A defense framework against MLLM-based web GUI agents, with an accompanying benc
 
 Current CAPTCHA types are no longer safe to MLLMs backed GUI agents. Browser-Use agent backed by frontier models like GPT-5.2, Gemini-3-Pro, and Claude-Opus4.5 achieve considerable pass rates on existing logic CAPTCHAs (Bingo, etc.), effectively collapsing the security barrier.
 
-Next-Gen CAPTCHAs exploit the **Cognitive Gap** — the persistent asymmetry between human intuition and the over-segmented, step-by-step reasoning of GUI agents. We design interactive tasks that are trivial for humans but systematically hard for agents due to bottlenecks in spatial grounding, temporal integration, and perception-to-action alignment.
+Next-Gen CAPTCHAs exploit the **Cognitive Gap** — the persistent asymmetry between human intuition and the over-segmented, step-by-step reasoning of GUI agents. We design interactive tasks that are solvable for humans without domain knowledge but systematically hard for agents due to bottlenecks in spatial grounding, temporal integration, and perception-to-action alignment.
 
 This repository provides:
 1. **Defense Framework** — procedural generation of unlimited CAPTCHA instances (`captcha_generation/`)
-2. **Benchmark Snapshot** — 519 fixed puzzles across 27 families for reproducible evaluation (`captcha_data/`)
+2. **Benchmark Snapshot** — 519 puzzles across 27 families for reproducible evaluation (`captcha_data/`)
 3. **Agent Evaluation Tools** — CLI integrations for Browser-Use and CrewAI (`agent_frameworks/`)
 
 ## News
 
-- [2026-02-06] Interactive demo is live on Hugging Face Spaces: https://huggingface.co/spaces/zcahjl3/NextGen-CAPTCHAs
-- [2026-02-06] Project webpage is live: https://greenoso.github.io/NextGen-CAPTCHAs_webpage/
+- [2026-02-09] Interactive demo is live on Hugging Face Spaces: https://huggingface.co/spaces/zcahjl3/NextGen-CAPTCHAs
+- [2026-02-09] Project webpage is live: https://greenoso.github.io/NextGen-CAPTCHAs_webpage/
 
 ## Quick Start
 
