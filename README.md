@@ -23,7 +23,7 @@ A defense framework against MLLM-based web GUI agents, with an accompanying benc
 Current CAPTCHA types are no longer safe to MLLMs backed GUI agents. Browser-Use agent backed by frontier models like GPT-5.2, Gemini-3-Pro, and Claude-Opus4.5 achieve considerable pass rates on existing logic CAPTCHAs (Bingo, etc.), effectively collapsing the security barrier.
 
 <p align="center">
-  <img src="./assets/case_example.png" alt="Case Analysis" width="90%">
+  <img src="./assets/case_example.png" alt="Case Analysis" width="75%">
 </p>
 
 Next-Gen CAPTCHAs exploit the **Cognitive Gap** — the persistent asymmetry between human intuition and the over-segmented, step-by-step reasoning of GUI agents. We design interactive tasks that are solvable for humans without domain knowledge but systematically hard for agents due to bottlenecks in spatial grounding, temporal integration, and perception-to-action alignment.
@@ -105,7 +105,7 @@ Examples of the 27 CAPTCHA families spanning diverse cognitive challenges includ
 Frontier AI models still lag significantly behind human performance on our benchmark, with a **92.90% accuracy gap**.
 
 <p align="center">
-  <img src="./assets/figure1_model_performance.png" alt="Model Performance Comparison" width="55%">
+  <img src="./assets/figure1_model_performance.png" alt="Model Performance Comparison" width="60%">
 </p>
 
 ### Cost-Effectiveness Analysis
@@ -116,7 +116,7 @@ The best models achieve only single-digit accuracy while incurring high costs an
 - **135-puzzle lite subset** (due to latency/cost): Claude-Opus4.5-Extended-ThinkingHigh, GPT-5.2-xHigh — costs extrapolated to the full 519-puzzle set
 
 <p align="center">
-  <img src="./assets/figure_cost_effectiveness.png" alt="Cost-Effectiveness Analysis" width="55%">
+  <img src="./assets/figure_cost_effectiveness.png" alt="Cost-Effectiveness Analysis" width="60%">
 </p>
 
 ### Failure Case Correlation
