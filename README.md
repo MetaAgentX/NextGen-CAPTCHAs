@@ -415,7 +415,7 @@ If you find this work useful in your research, please consider citing our paper:
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=MetaAgentX/NextGen-CAPTCHAs&type=Date)](https://star-history.com/#MetaAgentX/NextGen-CAPTCHAs&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=MetaAgentX/NextGen-CAPTCHAs&type=Date)](https://www.star-history.com/#MetaAgentX/NextGen-CAPTCHAs&type=date&legend=top-left)
 
 ## License
 
