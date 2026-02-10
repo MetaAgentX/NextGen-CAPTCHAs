@@ -9,7 +9,6 @@
 <div align="center">
 
 [![Webpage](https://img.shields.io/badge/Webpage-Live-2ea44f)](https://greenoso.github.io/NextGen-CAPTCHAs_webpage/)
-[![Code](https://img.shields.io/badge/Code-GitHub-181717)](https://github.com/MetaAgentX/NextGen-CAPTCHAs)
 [![Open In Spaces](https://img.shields.io/badge/🤗-Open%20In%20Spaces-blue)](https://huggingface.co/spaces/zcahjl3/NextGen-CAPTCHAs)
 [![Dataset](https://img.shields.io/badge/%F0%9F%93%A6-dataset-orange)](https://huggingface.co/datasets/YaxinLuo/NextGen-CAPTCHAs)
 ![License](https://img.shields.io/badge/license-MIT-orange)
