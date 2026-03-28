@@ -771,7 +771,31 @@ class RawVLLMResponseCapture:
 		return (self.last_usage, self.last_reasoning_content)
 
 
-def _build_task_prompt(url: str, limit: int, isolated_mode: bool = False) -> str:
+def _load_oracle_strategy(url: str, oracle_path: str) -> str:
+	"""Load the oracle strategy for the puzzle type extracted from the URL."""
+	from urllib.parse import urlparse, parse_qs
+	parsed = urlparse(url)
+	params = parse_qs(parsed.query)
+	puzzle_type = params.get('type', [None])[0]
+	if not puzzle_type:
+		logging.warning('Oracle mode: no puzzle type found in URL, skipping oracle injection')
+		return ''
+	try:
+		with open(oracle_path) as f:
+			strategies = json.load(f)
+		entry = strategies.get(puzzle_type)
+		if entry and entry.get('strategy'):
+			logging.info('Oracle mode: injecting strategy for %s', puzzle_type)
+			return entry['strategy']
+		else:
+			logging.warning('Oracle mode: no strategy found for %s', puzzle_type)
+			return ''
+	except (FileNotFoundError, json.JSONDecodeError) as e:
+		logging.error('Oracle mode: failed to load %s: %s', oracle_path, e)
+		return ''
+
+
+def _build_task_prompt(url: str, limit: int, isolated_mode: bool = False, oracle_path: str = None) -> str:
 	"""
 	Create the instruction string passed to the browser-use agent.
 
@@ -780,6 +804,7 @@ def _build_task_prompt(url: str, limit: int, isolated_mode: bool = False) -> str
 	    limit: Number of puzzles the agent should attempt before finishing.
 	    isolated_mode: If True, agent solves ONE puzzle then stops (--isolate-puzzles mode).
 	                   If False, agent solves multiple puzzles up to limit.
+	    oracle_path: Path to oracle_strategies.json for adaptive attack mode.
 	"""
 	# Mode-specific instructions
 	if isolated_mode:
@@ -830,6 +855,22 @@ def _build_task_prompt(url: str, limit: int, isolated_mode: bool = False) -> str
 
 	End with a summary: puzzle type and whether solved correctly.
 	"""
+
+	# Inject oracle strategy if provided
+	if oracle_path:
+		strategy = _load_oracle_strategy(url, oracle_path)
+		if strategy:
+			oracle_block = f"""
+
+	===== EXPERT SOLVING STRATEGY =====
+	The following strategy provides expert background knowledge for this puzzle type.
+	Use it to guide your visual analysis and interaction approach.
+
+	{strategy}
+	===================================
+	"""
+			instructions += oracle_block
+
 	return textwrap.dedent(instructions).strip()
 
 
@@ -1502,7 +1543,8 @@ async def _run_agent(args: argparse.Namespace) -> int:
 		# (in step_callback via extract_puzzle_from_browser)
 
 	browser = _create_browser(args)
-	task = _build_task_prompt(args.url, args.limit, isolated_mode=args.isolate_puzzles)
+	task = _build_task_prompt(args.url, args.limit, isolated_mode=args.isolate_puzzles,
+		oracle_path=getattr(args, 'oracle', None))
 
 	# Log the task prompt
 	if llm_logger:
@@ -2717,6 +2759,14 @@ def _build_parser() -> argparse.ArgumentParser:
 		default=None,
 		help='Run ID to use for logging. When provided, all logs from the same run will be grouped '
 		'in the same directory. Useful for benchmarking where multiple puzzles should share the same run.'
+	)
+	parser.add_argument(
+		'--oracle',
+		type=str,
+		default=None,
+		help='Path to oracle_strategies.json for adaptive attack mode. '
+		'Injects puzzle-type-specific solving strategy into the agent prompt. '
+		'Example: --oracle draft/oracle_strategies.json'
 	)
 	parser.add_argument('--base-url', dest='base_url', help='Custom API base URL (required for vllm provider)')
 	parser.add_argument('--api-key', dest='api_key', help='API key (use "EMPTY" for local vLLM)')

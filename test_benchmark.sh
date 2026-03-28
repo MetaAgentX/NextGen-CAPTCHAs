@@ -48,6 +48,7 @@ RESULTS_FILE=""  # Set after TIMESTAMP is generated
 CROSS_PUZZLE_MEMORY="false"  # Default: isolate puzzles for fair benchmarking
 SEQUENTIAL_MODE="false"
 START_SERVER="true"  # Whether to start server (set to false if already running)
+ORACLE=""  # Path to oracle_strategies.json for adaptive attack mode
 
 # Color codes
 RED='\033[0;31m'
@@ -236,6 +237,10 @@ while [[ $# -gt 0 ]]; do
         --debug-vllm)
             DEBUG_VLLM="--debug-vllm"
             shift
+            ;;
+        --oracle)
+            ORACLE="$2"
+            shift 2
             ;;
         --seed)
             SEED="$2"
@@ -563,6 +568,13 @@ if [ -n "$API_KEY" ]; then
     API_KEY_FLAG="--api-key $API_KEY"
 fi
 
+# Build oracle flag if set (adaptive attack mode)
+ORACLE_FLAG=""
+if [ -n "$ORACLE" ]; then
+    ORACLE_FLAG="--oracle $ORACLE"
+    echo -e "${BLUE}Oracle mode: $ORACLE${NC}"
+fi
+
 # Function to run a puzzle type with memory (batch mode)
 run_puzzle_type() {
     local ptype=$1
@@ -592,6 +604,7 @@ run_puzzle_type() {
         $BASE_URL_FLAG \
         $API_KEY_FLAG \
         $DEBUG_VLLM \
+        $ORACLE_FLAG \
         $HEADLESS \
         $VERBOSE 2>&1 | tee -a "test_log_${TIMESTAMP}.txt" || true
 
@@ -639,6 +652,7 @@ run_single_puzzle() {
         $BASE_URL_FLAG \
         $API_KEY_FLAG \
         $DEBUG_VLLM \
+        $ORACLE_FLAG \
         $HEADLESS \
         $VERBOSE 2>&1 | tee -a "test_log_${TIMESTAMP}.txt" || true
 }
@@ -669,6 +683,7 @@ if [ "$SEQUENTIAL_MODE" = "true" ]; then
         $BASE_URL_FLAG \
         $API_KEY_FLAG \
         $DEBUG_VLLM \
+        $ORACLE_FLAG \
         $HEADLESS \
         $VERBOSE 2>&1 | tee -a "test_log_${TIMESTAMP}.txt" || true
 
