@@ -2109,11 +2109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pieces = data.pieces || [];
         const gridSize = data.grid_size || [2, 2];
         const pieceSize = data.piece_size || 150;
-        const correctPositions = data.correct_positions || [];
         const referenceImage = data.reference_image;
-        // shuffled_order maps display index -> original piece_index
-        // If not provided, assume pieces are in original order (0, 1, 2, ...)
-        const shuffledOrder = data.shuffled_order || pieces.map((_, i) => i);
 
         if (!pieces.length) {
             showError('No puzzle pieces available.');
@@ -2209,22 +2205,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     cell.style.backgroundColor = '#fff';
 
-                    // displayIndex is the index in the shuffled pieces array
-                    const displayIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                    // originalPieceIndex is the actual piece_index that matches correct_positions
-                    const originalPieceIndex = shuffledOrder[displayIndex];
+                    // Jigsaw submissions use the served/display index as piece_index.
+                    const pieceIndex = parseInt(e.dataTransfer.getData('text/plain'));
                     const row = parseInt(cell.dataset.row);
                     const col = parseInt(cell.dataset.col);
 
-                    logAction('jigsaw_piece_dropped', { piece_index: originalPieceIndex, display_index: displayIndex, to_row: row, to_col: col });
+                    logAction('jigsaw_piece_dropped', { piece_index: pieceIndex, display_index: pieceIndex, to_row: row, to_col: col });
 
                     // If cell already has a piece, don't replace it
                     if (cell.querySelector('.jigsaw-piece')) {
                         return;
                     }
 
-                    // Find existing placement for this piece (by original piece index)
-                    const existingPlacementIdx = jigsawPlacements.findIndex(p => p.piece_index === originalPieceIndex);
+                    // Find existing placement for this piece.
+                    const existingPlacementIdx = jigsawPlacements.findIndex(p => p.piece_index === pieceIndex);
 
                     // If piece was already placed in a different cell, clear that cell
                     if (existingPlacementIdx !== -1) {
@@ -2239,7 +2233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             // Update the placement to new position
                             jigsawPlacements[existingPlacementIdx] = {
-                                piece_index: originalPieceIndex,
+                                piece_index: pieceIndex,
                                 grid_row: row,
                                 grid_col: col
                             };
@@ -2250,28 +2244,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         // New placement - add to array
                         jigsawPlacements.push({
-                            piece_index: originalPieceIndex,
+                            piece_index: pieceIndex,
                             grid_row: row,
                             grid_col: col
                         });
                     }
 
-                    // Remove piece from tray if it was there (use displayIndex for DOM lookup)
-                    const trayPiece = document.querySelector(`.jigsaw-tray-piece[data-piece-index="${displayIndex}"]`);
+                    // Remove piece from tray if it was there.
+                    const trayPiece = document.querySelector(`.jigsaw-tray-piece[data-piece-index="${pieceIndex}"]`);
                     if (trayPiece) {
                         trayPiece.remove();
                     }
 
-                    // Place piece in this cell (use displayIndex to get image source)
+                    // Place piece in this cell.
                     const pieceImg = document.createElement('img');
-                    pieceImg.src = pieces[displayIndex];
+                    pieceImg.src = pieces[pieceIndex];
                     pieceImg.className = 'jigsaw-piece';
                     pieceImg.style.width = '100%';
                     pieceImg.style.height = '100%';
                     pieceImg.style.objectFit = 'contain';
                     pieceImg.draggable = true;
-                    pieceImg.dataset.pieceIndex = displayIndex;
-                    pieceImg.dataset.originalPieceIndex = originalPieceIndex;
+                    pieceImg.dataset.pieceIndex = pieceIndex;
 
                     // Clear cell and add piece
                     cell.innerHTML = '';
@@ -2279,9 +2272,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Make piece draggable again
                     pieceImg.addEventListener('dragstart', (e) => {
-                        e.dataTransfer.setData('text/plain', displayIndex.toString());
+                        e.dataTransfer.setData('text/plain', pieceIndex.toString());
                         e.dataTransfer.effectAllowed = 'move';
-                        logAction('jigsaw_drag_start', { piece_index: originalPieceIndex, from_cell: cellIndex });
+                        logAction('jigsaw_drag_start', { piece_index: pieceIndex, from_row: row, from_col: col });
                     });
 
                     // Allow removing piece by dragging to tray
@@ -2292,7 +2285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (!dropTarget?.closest('.jigsaw-grid-cell')) {
                                 // Return to tray - remove from cell
                                 cell.innerHTML = '';
-                                const placementIdx = jigsawPlacements.findIndex(p => p.piece_index === originalPieceIndex);
+                                const placementIdx = jigsawPlacements.findIndex(p => p.piece_index === pieceIndex);
                                 if (placementIdx !== -1) {
                                     jigsawPlacements.splice(placementIdx, 1);
                                 }
@@ -2337,20 +2330,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const existingPieces = trayContainer.querySelectorAll('.jigsaw-tray-piece');
             existingPieces.forEach(p => p.remove());
 
-            // Show pieces that are not placed (jigsawPlacements uses original piece indices)
-            const placedOriginalIndices = new Set(jigsawPlacements.map(p => p.piece_index));
+            // Show pieces that are not placed.
+            const placedPieceIndices = new Set(jigsawPlacements.map(p => p.piece_index));
 
-            // displayIndex is the index in shuffled pieces array
-            pieces.forEach((pieceSrc, displayIndex) => {
-                // Get original piece index for this display position
-                const originalPieceIndex = shuffledOrder[displayIndex];
-                // Check if this piece (by original index) is already placed
-                if (!placedOriginalIndices.has(originalPieceIndex)) {
+            pieces.forEach((pieceSrc, pieceIndex) => {
+                if (!placedPieceIndices.has(pieceIndex)) {
                     const pieceWrapper = document.createElement('div');
                     pieceWrapper.className = 'jigsaw-tray-piece';
-                    pieceWrapper.id = `jigsaw-piece-${displayIndex}`;
-                    pieceWrapper.dataset.pieceIndex = displayIndex;
-                    pieceWrapper.dataset.originalPieceIndex = originalPieceIndex;
+                    pieceWrapper.id = `jigsaw-piece-${pieceIndex}`;
+                    pieceWrapper.dataset.pieceIndex = pieceIndex;
                     pieceWrapper.style.width = `${pieceSize * 0.6}px`;
                     pieceWrapper.style.height = `${pieceSize * 0.6}px`;
                     pieceWrapper.style.cursor = 'grab';
@@ -2366,14 +2354,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     pieceImg.style.height = '100%';
                     pieceImg.style.objectFit = 'contain';
                     pieceImg.draggable = true;
-                    pieceImg.dataset.pieceIndex = displayIndex;
+                    pieceImg.dataset.pieceIndex = pieceIndex;
 
                     pieceWrapper.appendChild(pieceImg);
                     trayContainer.appendChild(pieceWrapper);
 
                     pieceImg.addEventListener('dragstart', (e) => {
-                        // Pass displayIndex - drop handler will convert to original index
-                        e.dataTransfer.setData('text/plain', displayIndex.toString());
+                        e.dataTransfer.setData('text/plain', pieceIndex.toString());
                         e.dataTransfer.effectAllowed = 'move';
                         pieceWrapper.style.opacity = '0.5';
                     });
@@ -3752,6 +3739,9 @@ document.addEventListener('DOMContentLoaded', () => {
             puzzle_id: currentPuzzle.puzzle_id,
             session_id: sessionId
         };
+        if (currentPuzzle.validation_token) {
+            answerData.validation_token = currentPuzzle.validation_token;
+        }
 
         switch (currentPuzzle.input_type) {
             case 'number':
@@ -4000,6 +3990,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     puzzle_id: currentPuzzle.puzzle_id,
                     user_answer: answerData.answer,
                     correct_answer: data.correct_answer,
+                    correct_answer_positions: data.correct_answer_positions,
                     correct: data.correct,
                     elapsed_time: data.elapsed_time || answerData.elapsed_time,
                     action_sequence: data.action_sequence || answerData.action_sequence,

@@ -550,16 +550,6 @@ def generate_jigsaw_puzzle(config: dict, seed: int = None) -> dict:
     # shuffled_order[displayIndex] = originalPieceIndex
     shuffled_pieces = [pieces_data[i] for i in shuffled_order]
 
-    # Store puzzle state
-    active_jigsaw_puzzles[puzzle_id] = {
-        "pieces_data": pieces_data,
-        "correct_positions": correct_positions,
-        "grid_size": [grid_rows, grid_cols],
-        "piece_size": piece_size,
-        "shuffled_order": shuffled_order,
-        "created_at": time.time()
-    }
-
     # Create reference image (full image) as base64
     buffered = io.BytesIO()
     img.save(buffered, format="PNG")
@@ -576,6 +566,63 @@ def generate_jigsaw_puzzle(config: dict, seed: int = None) -> dict:
         "reference_image": reference_data_url,
         "prompt": "Drag the puzzle pieces to complete the jigsaw puzzle"
     }
+
+
+def build_served_jigsaw_positions(correct_positions, shuffled_order=None):
+    """Return correct positions keyed by the piece indices the client submits."""
+    if not isinstance(correct_positions, list):
+        return []
+
+    if shuffled_order is None:
+        shuffled_order = list(range(len(correct_positions)))
+
+    served_correct_positions = []
+    for display_index, stored_index in enumerate(shuffled_order):
+        if not isinstance(stored_index, int) or stored_index < 0 or stored_index >= len(correct_positions):
+            continue
+
+        correct_pos = correct_positions[stored_index] or {}
+        served_correct_positions.append({
+            "piece_index": display_index,
+            "grid_row": correct_pos.get("grid_row"),
+            "grid_col": correct_pos.get("grid_col")
+        })
+
+    return served_correct_positions
+
+
+def register_jigsaw_validation(correct_positions, shuffled_order=None):
+    """Store served-order jigsaw positions behind an opaque token."""
+    validation_token = f"jigsaw_validation_{uuid.uuid4().hex}"
+    served_correct_positions = build_served_jigsaw_positions(correct_positions, shuffled_order)
+    active_jigsaw_puzzles[validation_token] = {
+        "correct_positions": served_correct_positions,
+        "created_at": time.time()
+    }
+    return validation_token, served_correct_positions
+
+
+def register_opaque_image_bundle(bundle_key, puzzle_type, images):
+    """Register filenames behind opaque per-request image URLs."""
+    active_image_puzzles[bundle_key] = {
+        "type": puzzle_type,
+        "images": images
+    }
+    return [f'/api/puzzle_image/{bundle_key}/{i}' for i in range(len(images))]
+
+
+def format_jigsaw_correct_positions(correct_positions):
+    """Format jigsaw positions for human-readable benchmark output."""
+    if not isinstance(correct_positions, list):
+        return "Puzzle completion details"
+
+    position_strs = []
+    for pos in correct_positions:
+        piece_idx = pos.get('piece_index', '?')
+        row = pos.get('grid_row', '?')
+        col = pos.get('grid_col', '?')
+        position_strs.append(f"Piece {piece_idx} at ({row}, {col})")
+    return f"Correct positions: {'; '.join(position_strs)}"
 
 
 def generate_transform_pipeline(config: dict, seed: int = None) -> dict:
@@ -2494,6 +2541,10 @@ def get_puzzle():
                 config = ground_truth.get("config", {})
                 puzzle = generate_jigsaw_puzzle(config, seed=seed)
                 puzzle_id = puzzle["puzzle_id"]
+                validation_token, _ = register_jigsaw_validation(
+                    puzzle.get("correct_positions", []),
+                    puzzle.get("shuffled_order")
+                )
                 
                 additional_data = {
                     "pieces": puzzle["pieces"],  # Base64 data URLs (shuffled)
@@ -2501,7 +2552,8 @@ def get_puzzle():
                     "grid_size": puzzle["grid_size"],
                     "piece_size": puzzle["piece_size"],
                     # NOTE: correct_positions removed to prevent answer leakage - server validates via check_answer()
-                    "reference_image": puzzle["reference_image"]
+                    "reference_image": puzzle["reference_image"],
+                    "validation_token": validation_token
                 }
                 
                 response_data = {
@@ -2536,14 +2588,20 @@ def get_puzzle():
         shuffled_order = list(range(num_pieces))
         random.shuffle(shuffled_order)
         shuffled_pieces = [pieces[i] for i in shuffled_order]
+        validation_token, _ = register_jigsaw_validation(correct_positions, shuffled_order)
+        image_filenames = ([reference_image] if reference_image else []) + shuffled_pieces
+        opaque_image_urls = register_opaque_image_bundle(validation_token, puzzle_type, image_filenames)
+        reference_image_url = opaque_image_urls[0] if reference_image else None
+        piece_image_urls = opaque_image_urls[1:] if reference_image else opaque_image_urls
 
         additional_data = {
-            "pieces": [f'/captcha_data/{puzzle_type}/{piece}' for piece in shuffled_pieces],
-            # NOTE: shuffled_order removed to prevent answer leakage via filename parsing
+            "pieces": piece_image_urls,
+            # NOTE: piece filenames are hidden behind opaque per-request routes
             "grid_size": grid_size,
             "piece_size": piece_size,
             # NOTE: correct_positions removed to prevent answer leakage - server validates via check_answer()
-            "reference_image": f'/captcha_data/{puzzle_type}/{reference_image}' if reference_image else None
+            "reference_image": reference_image_url,
+            "validation_token": validation_token
         }
     elif puzzle_type == "Set_Game":
         option_images = ground_truth[selected_puzzle].get("options", [])
@@ -2571,14 +2629,20 @@ def get_puzzle():
         shuffled_order = list(range(num_pieces))
         random.shuffle(shuffled_order)
         shuffled_pieces = [pieces[i] for i in shuffled_order]
+        validation_token, _ = register_jigsaw_validation(correct_positions, shuffled_order)
+        image_filenames = ([reference_image] if reference_image else []) + shuffled_pieces
+        opaque_image_urls = register_opaque_image_bundle(validation_token, puzzle_type, image_filenames)
+        reference_image_url = opaque_image_urls[0] if reference_image else None
+        piece_image_urls = opaque_image_urls[1:] if reference_image else opaque_image_urls
 
         additional_data = {
-            "pieces": [f'/captcha_data/{puzzle_type}/{piece}' for piece in shuffled_pieces],
-            # NOTE: shuffled_order removed to prevent answer leakage via filename parsing
+            "pieces": piece_image_urls,
+            # NOTE: piece filenames are hidden behind opaque per-request routes
             "grid_size": grid_size,
             "piece_size": piece_size,
             # NOTE: correct_positions removed to prevent answer leakage - server validates via check_answer()
-            "reference_image": f'/captcha_data/{puzzle_type}/{reference_image}' if reference_image else None
+            "reference_image": reference_image_url,
+            "validation_token": validation_token
         }
     elif puzzle_type == "Spooky_Jigsaw":
         # Spooky Jigsaw with motion-based visibility
@@ -2596,14 +2660,20 @@ def get_puzzle():
         shuffled_order = list(range(num_pieces))
         random.shuffle(shuffled_order)
         shuffled_pieces = [pieces[i] for i in shuffled_order]
+        validation_token, _ = register_jigsaw_validation(correct_positions, shuffled_order)
+        image_filenames = ([reference_image] if reference_image else []) + shuffled_pieces
+        opaque_image_urls = register_opaque_image_bundle(validation_token, puzzle_type, image_filenames)
+        reference_image_url = opaque_image_urls[0] if reference_image else None
+        piece_image_urls = opaque_image_urls[1:] if reference_image else opaque_image_urls
 
         additional_data = {
-            "pieces": [f'/captcha_data/{puzzle_type}/{piece}' for piece in shuffled_pieces],
-            # NOTE: shuffled_order removed to prevent answer leakage via filename parsing
+            "pieces": piece_image_urls,
+            # NOTE: piece filenames are hidden behind opaque per-request routes
             "grid_size": grid_size,
             "piece_size": piece_size,
             # NOTE: correct_positions removed to prevent answer leakage - server validates via check_answer()
-            "reference_image": f'/captcha_data/{puzzle_type}/{reference_image}' if reference_image else None
+            "reference_image": reference_image_url,
+            "validation_token": validation_token
         }
     elif puzzle_type == "Occluded_Pattern_Counting":
         # Load cell pool to map cell ID to filename
@@ -3002,6 +3072,7 @@ def check_answer():
     elapsed_time = float(data.get('elapsed_time', 0))
     action_sequence = data.get('action_sequence', [])
     session_id = data.get('session_id', 'default')
+    validation_token = data.get('validation_token')
 
     # Debug logging for Map_Parity
     if puzzle_type == 'Map_Parity':
@@ -3383,14 +3454,20 @@ def check_answer():
             return jsonify({'error': 'Invalid answer format for Storyboard_Logic'}), 400
     elif puzzle_type == 'Static_Jigsaw' or puzzle_type == 'Dynamic_Jigsaw' or puzzle_type == 'Spooky_Jigsaw':
         try:
-            # Check if this is a generated puzzle (stored in active_jigsaw_puzzles)
-            puzzle_state = active_jigsaw_puzzles.get(puzzle_id)
+            puzzle_state_key = None
+            puzzle_state = None
+            if validation_token and validation_token in active_jigsaw_puzzles:
+                puzzle_state_key = validation_token
+                puzzle_state = active_jigsaw_puzzles.get(validation_token)
+            elif puzzle_id in active_jigsaw_puzzles:
+                puzzle_state_key = puzzle_id
+                puzzle_state = active_jigsaw_puzzles.get(puzzle_id)
             
             if puzzle_state:
-                # Generated puzzle - use stored correct positions
+                # Served puzzle - use the display-order positions recorded at delivery time
                 correct_positions = puzzle_state.get('correct_positions', [])
             else:
-                # Ground truth puzzle
+                # Fallback for legacy clients that do not submit a validation token
                 if puzzle_id not in ground_truth:
                     return jsonify({'error': 'Invalid puzzle ID'}), 400
                 correct_positions = ground_truth[puzzle_id].get('correct_positions', [])
@@ -3401,26 +3478,19 @@ def check_answer():
                 is_correct = False
                 correct_answer_info = correct_positions
                 
-                # Clean up generated puzzle state after validation
-                if puzzle_state:
-                    active_jigsaw_puzzles.pop(puzzle_id, None)
-                
-                # Format the correct positions as a readable string
-                if isinstance(correct_answer_info, list):
-                    position_strs = []
-                    for pos in correct_answer_info:
-                        piece_idx = pos.get('piece_index', '?')
-                        row = pos.get('grid_row', '?')
-                        col = pos.get('grid_col', '?')
-                        position_strs.append(f"Piece {piece_idx} at ({row}, {col})")
-                    correct_payload = f"Correct positions: {'; '.join(position_strs)}"
-                else:
-                    correct_payload = "Puzzle completion details"
+                # Clean up served puzzle state after validation
+                if puzzle_state_key:
+                    active_jigsaw_puzzles.pop(puzzle_state_key, None)
+                if validation_token:
+                    active_image_puzzles.pop(validation_token, None)
+
+                correct_payload = format_jigsaw_correct_positions(correct_answer_info)
                 
                 return jsonify({
                     'correct': False,
                     'user_answer': user_answer,
                     'correct_answer': correct_payload,
+                    'correct_answer_positions': correct_answer_info,
                     'details': {
                         'user_placements': user_answer if user_answer else [],
                         'correct_positions': correct_answer_info
@@ -3483,13 +3553,18 @@ def check_answer():
                 print(f"User placements: {user_placements}")
                 print(f"User positions dict: {user_positions_dict}")
             
-            # Clean up generated puzzle state after validation
-            if puzzle_state:
-                active_jigsaw_puzzles.pop(puzzle_id, None)
+            # Clean up served puzzle state after validation
+            if puzzle_state_key:
+                active_jigsaw_puzzles.pop(puzzle_state_key, None)
+            if validation_token:
+                active_image_puzzles.pop(validation_token, None)
         except (ValueError, TypeError, KeyError) as e:
             import traceback
             print(f"Jigsaw validation error: {str(e)}")
             print(traceback.format_exc())
+            if validation_token:
+                active_jigsaw_puzzles.pop(validation_token, None)
+                active_image_puzzles.pop(validation_token, None)
             return jsonify({'error': f'Invalid answer format for Static_Jigsaw: {str(e)}'}), 400
     elif puzzle_type == 'Spooky_Size':
         state = active_spooky_size_puzzles.get(puzzle_id)
@@ -3685,17 +3760,7 @@ def check_answer():
             else:
                 correct_payload = str(correct_answer_info) if correct_answer_info is not None else "Unknown"
     elif puzzle_type == 'Static_Jigsaw' or puzzle_type == 'Dynamic_Jigsaw' or puzzle_type == 'Spooky_Jigsaw':
-        # Format the correct positions as a readable string
-        if isinstance(correct_answer_info, list):
-            position_strs = []
-            for pos in correct_answer_info:
-                piece_idx = pos.get('piece_index', '?')
-                row = pos.get('grid_row', '?')
-                col = pos.get('grid_col', '?')
-                position_strs.append(f"Piece {piece_idx} at ({row}, {col})")
-            correct_payload = f"Correct positions: {'; '.join(position_strs)}"
-        else:
-            correct_payload = "Puzzle completion details"
+        correct_payload = format_jigsaw_correct_positions(correct_answer_info)
     elif puzzle_type == 'Transform_Pipeline':
         # Format the correct answer index
         if isinstance(correct_answer_info, int):
@@ -3731,6 +3796,8 @@ def check_answer():
         'elapsed_time': elapsed_time,
         'action_sequence': action_sequence
     }
+    if puzzle_type in ('Static_Jigsaw', 'Dynamic_Jigsaw', 'Spooky_Jigsaw') and isinstance(correct_answer_info, list):
+        response_body['correct_answer_positions'] = correct_answer_info
     if status is not None:
         response_body['status'] = status
 
