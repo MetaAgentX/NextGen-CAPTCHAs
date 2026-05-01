@@ -64,6 +64,7 @@ This repository provides:
 
 ## News
 
+- [2026-05-01] Next-Gen CAPTCHAs is accepted at ICML 2026!!! Congrats to all the co-authors!!!
 - [2026-02-09] Interactive demo is live on Hugging Face Spaces: https://huggingface.co/spaces/zcahjl3/NextGen-CAPTCHAs
 - [2026-02-09] Project webpage is live: https://greenoso.github.io/NextGen-CAPTCHAs_webpage/
 
